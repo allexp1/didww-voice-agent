@@ -1,0 +1,19 @@
+[Unit]
+Description=Voice AI SIP->Gemini Live agent
+After=network.target docker.service
+Requires=docker.service
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/voice-ai
+EnvironmentFile=/opt/voice-ai/.env
+ExecStart=/usr/bin/node /opt/voice-ai/agent.js
+Restart=on-failure
+RestartSec=3
+KillSignal=SIGTERM
+TimeoutStopSec=65
+StandardOutput=append:/var/log/voice-ai/agent.log
+StandardError=append:/var/log/voice-ai/agent.log
+
+[Install]
+WantedBy=multi-user.target

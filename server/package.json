@@ -1,0 +1,29 @@
+{
+  "name": "didww-voice-agent",
+  "version": "1.0.0",
+  "description": "Self-hosted AI voice agent for DIDWW SIP trunks — Gemini Live + drachtio + rtpengine.",
+  "license": "MIT",
+  "type": "module",
+  "main": "agent.js",
+  "scripts": {
+    "start": "node agent.js",
+    "webhook": "node webhook.js",
+    "echo-test": "node echo-test.js",
+    "call-forward": "node call-forward.js",
+    "check": "node --check agent.js && node --check webhook.js && node --check echo-test.js && node --check call-forward.js && node --check demo-config.js && node --check g722.js && node --check rtpengine.js && node --check trunk-register.js"
+  },
+  "overrides": {
+    "uuid": "^11.1.1"
+  },
+  "dependencies": {
+    "drachtio-srf": "^5.0.22",
+    "sdp-transform": "^3.0.0",
+    "@google/genai": "^1.50.1",
+    "@alexanderolsen/libsamplerate-js": "^2.1.2",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.5.0",
+    "ws": "^8.18.0"
+  },
+  "engines": { "node": ">=20" }
+}

@@ -1,0 +1,8 @@
+[Unit]
+Description=Sync Caddy Let's Encrypt cert into drachtio SIP-TLS
+After=caddy.service
+Wants=caddy.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/drachtio-cert-sync.sh

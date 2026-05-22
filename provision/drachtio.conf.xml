@@ -1,0 +1,26 @@
+<drachtio>
+  <!-- The admin secret must match DRACHTIO_SECRET in .env.
+       Generate one with:  openssl rand -hex 24 -->
+  <admin port="9022" secret="CHANGEME_drachtio_admin_secret">127.0.0.1</admin>
+  <request-handlers/>
+  <sip>
+    <contacts>
+      <contact>sip:*;transport=udp,tcp</contact>
+      <contact>sips:*;transport=tls</contact>
+      <contact>sip:127.0.0.1:8443;transport=ws</contact>
+    </contacts>
+    <tls>
+      <key-file>/etc/drachtio/tls/privkey.pem</key-file>
+      <cert-file>/etc/drachtio/tls/cert.pem</cert-file>
+      <chain-file>/etc/drachtio/tls/chain.pem</chain-file>
+      <dh-param>/etc/drachtio/tls/dh.pem</dh-param>
+    </tls>
+  </sip>
+  <cdrs>false</cdrs>
+  <monitoring/>
+  <logging>
+    <console/>
+    <sofia-loglevel>3</sofia-loglevel>
+    <loglevel>info</loglevel>
+  </logging>
+</drachtio>

@@ -1,0 +1,39 @@
+# didww-voice-agent — Caddy reverse proxy with automatic Let's Encrypt TLS.
+#
+# Replace voice.example.com with your domain; its DNS A record must point at
+# this server. /api/waba/* is the optional WhatsApp bridge — it is restricted
+# to your control app's IP (replace 198.51.100.20, or delete the block and the
+# @waba_allowed / @waba_any handlers if you are not using WABA).
+voice.example.com {
+  @waba_allowed {
+    path /api/waba/*
+    remote_ip 198.51.100.20
+  }
+  @waba_any path /api/waba/*
+
+  handle @waba_allowed {
+    reverse_proxy 127.0.0.1:3000
+  }
+  handle @waba_any {
+    respond "forbidden" 403
+  }
+  handle /healthz {
+    reverse_proxy 127.0.0.1:3000
+  }
+  handle /v1/calls/* {
+    reverse_proxy 127.0.0.1:3002
+  }
+  handle /sip {
+    reverse_proxy 127.0.0.1:8443
+  }
+
+  handle {
+    respond "not found" 404
+  }
+
+  encode zstd gzip
+  log {
+    output file /var/log/caddy/access.log
+    format console
+  }
+}

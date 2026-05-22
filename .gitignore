@@ -1,0 +1,21 @@
+# Secrets — real values live only on the server. See .env.example for the shape.
+.env
+.env.*
+!.env.example
+
+# Dependencies — reinstalled with `npm ci` in server/.
+node_modules/
+
+# Agent-tool local files — keep AI assistant config out of the published repo
+.claude/
+.codex/
+AGENTS.md
+
+# Editor / OS cruft
+.DS_Store
+*.bak
+*.bak-*
+
+# Captured media / logs
+*.pcap
+*.log

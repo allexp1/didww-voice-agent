@@ -1,0 +1,49 @@
+didww-voice-agent
+Copyright (c) 2026 didww-voice-agent contributors
+
+This project is licensed under the MIT License (see LICENSE).
+
+================================================================================
+Third-party components
+================================================================================
+
+didww-voice-agent orchestrates the following components as SEPARATE processes
+(Docker containers or npm packages). They are not modified or statically linked
+into this project; each is governed by its own license.
+
+  drachtio-server   SIP server, run as a Docker container.
+                    https://github.com/drachtio/drachtio-server
+  rtpengine         RTP/SRTP media proxy and transcoder, run as a Docker
+                    container. Licensed GPL-2.0.
+                    https://github.com/sipwise/rtpengine
+  Caddy             TLS reverse proxy. Licensed Apache-2.0.
+  Node.js packages  See server/package.json. Each dependency carries its own
+                    license (drachtio-srf, @google/genai, ws, express,
+                    sdp-transform, dotenv, express-rate-limit,
+                    @alexanderolsen/libsamplerate-js).
+
+================================================================================
+Bundled source
+================================================================================
+
+  server/g722.js    An ITU-T G.722 codec ported to JavaScript from the
+                    public-domain SpanDSP / CMU reference implementation.
+
+================================================================================
+Patent-encumbered codecs (OPTIONAL)
+================================================================================
+
+provision/rtpengine-evs/Dockerfile builds an rtpengine image with 3GPP EVS
+support. The EVS reference source (3GPP TS 26.443) is DOWNLOADED AT BUILD TIME
+from 3gpp.org and is NOT redistributed in this repository.
+
+EVS, AMR-NB and AMR-WB are patent-encumbered codecs. Building or operating a
+gateway that transcodes them may require patent licenses in your jurisdiction;
+this is the operator's responsibility. None of these codecs are required — a
+G.711 (PCMU) deployment uses none of them, and the stock rtpengine image avoids
+EVS entirely.
+
+================================================================================
+
+This project is not affiliated with or endorsed by DIDWW, Google or Meta.
+Product and company names are referenced only to describe interoperability.

@@ -1,0 +1,20 @@
+[Unit]
+Description=didww-voice-agent — call forwarding B2BUA (inbound DID → FORWARD_TO)
+After=network.target docker.service
+Requires=docker.service
+# Only one app may own the drachtio INVITE stream — starting call-forward
+# stops the agent / echo test, and vice versa (Conflicts= is symmetric).
+Conflicts=voice-ai-agent.service echo-test.service
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/voice-ai
+EnvironmentFile=/opt/voice-ai/.env
+ExecStart=/usr/bin/node /opt/voice-ai/call-forward.js
+Restart=on-failure
+RestartSec=3
+StandardOutput=append:/var/log/voice-ai/call-forward.log
+StandardError=append:/var/log/voice-ai/call-forward.log
+
+[Install]
+WantedBy=multi-user.target
