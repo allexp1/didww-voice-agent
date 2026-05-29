@@ -64,7 +64,7 @@ const DBG_MEDIA = process.env.DEBUG_MEDIA === '1';
 // clone answers calls with no extra infrastructure.
 //
 // Returns { systemPrompt, tools, contact, conversationId, locale } or null.
-async function fetchVoiceConfig(waId, name) {
+async function fetchVoiceConfig(waId, name, calledDid) {
   if (!INTERNAL_VOICE_URL || !INTERNAL_VOICE_TOKEN) return getDemoVoiceConfig();
   try {
     const r = await fetch(`${INTERNAL_VOICE_URL.replace(/\/$/, '')}/api/v1/voice/config`, {
@@ -73,7 +73,11 @@ async function fetchVoiceConfig(waId, name) {
         'content-type': 'application/json',
         'authorization': `Bearer ${INTERNAL_VOICE_TOKEN}`,
       },
-      body: JSON.stringify({ waId, name }),
+      // calledDid = the dialed business number (from the inbound INVITE's
+      // request-URI). The config service uses it to route the DID → its agent
+      // (multi-tenant). Omitted (undefined → dropped by JSON.stringify) on the
+      // internal/outbound callers, so the service falls back to its default path.
+      body: JSON.stringify({ waId, name, calledDid }),
       signal: AbortSignal.timeout(5000),
     });
     if (!r.ok) { console.warn(`[voice-config] HTTP ${r.status}`); return null; }
@@ -2766,7 +2770,10 @@ srf.invite(async (req, res) => {
     sessCodec = bridged.codec; answer = bridged.answerSdp;
   }
 
-  const voiceCfg = await fetchVoiceConfig(waId);
+  // The dialed business number (request-URI user, parsed above as ruriUser) tells
+  // the config service which DID — and therefore which agent — this call is for.
+  const calledDid = ruriUser ? normalizeToE164Digits(ruriUser) : null;
+  const voiceCfg = await fetchVoiceConfig(waId, null, calledDid);
   if (!voiceCfg?.systemPrompt) {
     console.warn(`[${callId}] no voice config — declining INVITE with 503`);
     if (bridged) bridged.cleanup(); else rtp.close();
