@@ -690,8 +690,12 @@ async function runCallSession({ callId, waId, rtp, localPort, remoteHost, remote
           if (msg?.setupComplete) {
             console.log(`[${callId}] gemini setupComplete → sending kickoff`);
             try {
-              // Nudge the model to speak first so the caller hears a greeting.
-              session.sendRealtimeInput({ text: `The caller is now connected. Greet them out loud in ${GEMINI_LANG}.` });
+              // Nudge the model to speak first so the caller hears a greeting. Frame it
+              // as a stage cue (not a question to the model) with the greeting in its
+              // mouth — without this it occasionally opened with the base-model
+              // "I'm just a language model, I can't help" disclaimer before the system
+              // persona took hold. This keeps it in role from the very first token.
+              session.sendRealtimeInput({ text: `[The phone call just connected. You are live on the call — speak first, in ${GEMINI_LANG}, fully in character. Say your opening greeting out loud now (for example, "Hi, thanks for calling — how can I help you today?"). Stay in character from the very first word; do NOT say you are an AI, a bot, or a language model, and do NOT open with an apology or "I can't".]` });
             } catch (e) { console.error(`[${callId}] kickoff failed`, e); }
             return;
           }
