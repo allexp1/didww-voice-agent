@@ -524,6 +524,17 @@ async function runCallSession({ callId, waId, rtp, localPort, remoteHost, remote
   let pendingOut24 = [];
   let pendingOut24Len = 0;
   let pendingFlushTimer = null;
+  // Prime the receiver's jitter buffer before the FIRST speech of a burst. Without
+  // this, the moment Gemini's first chunk arrives the pacer plays it on the very next
+  // 20ms tick — before the caller's device has buffered anything — so the opening
+  // words get clipped/rushed (the greeting suffers worst, when the far-end buffer is
+  // coldest). Prepending a short run of silence when speech resumes after a quiet gap
+  // gives the far end time to fill its buffer so the first phoneme lands intact. The
+  // very first talkspurt gets a larger cushion; later turns a small one so mid-call
+  // speech never feels laggy.
+  const JB_PRIME_MS = Number(process.env.JB_PRIME_MS) || 80;             // later turns
+  const JB_FIRST_PRIME_MS = Number(process.env.JB_FIRST_PRIME_MS) || 240; // the greeting
+  let firstSpeechDone = false;
   function flushOut24() {
     if (pendingFlushTimer) { clearTimeout(pendingFlushTimer); pendingFlushTimer = null; }
     if (pendingOut24Len === 0) return;
@@ -532,8 +543,14 @@ async function runCallSession({ callId, waId, rtp, localPort, remoteHost, remote
     for (const s of pendingOut24) { concat24.set(s, off); off += s.length; }
     pendingOut24 = []; pendingOut24Len = 0;
     const pcm8 = rsDown.process(concat24);
-    const merged = new Int16Array(outQueue.length + pcm8.length);
-    merged.set(outQueue); merged.set(pcm8, outQueue.length);
+    // First speech after a silent gap → prepend a silent cushion to prime playout.
+    const primeMs = firstSpeechDone ? JB_PRIME_MS : JB_FIRST_PRIME_MS;
+    firstSpeechDone = true;
+    const primeSamples = (outQueue.length === 0 && wasSilent)
+      ? Math.round((primeMs / 1000) * codec.rate) : 0;
+    const merged = new Int16Array(outQueue.length + primeSamples + pcm8.length);
+    merged.set(outQueue);                            // (empty here when priming)
+    merged.set(pcm8, outQueue.length + primeSamples); // silence (zeros) sits in the gap
     outQueue = merged;
   }
 
